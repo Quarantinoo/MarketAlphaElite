@@ -1,0 +1,24 @@
+workflows:
+  ios-build:
+    name: iOS Build
+    environment:
+      xcode: latest
+      cocoapods: default
+      vars:
+        XCODE_WORKSPACE: "MarketAlphaElite.xcodeproj"
+        XCODE_SCHEME: "MarketAlphaElite"
+    scripts:
+      - name: Build ipa
+        script: |
+          xcodebuild -project "$XCODE_WORKSPACE" \
+          -scheme "$XCODE_SCHEME" \
+          -sdk iphoneos \
+          -configuration Release \
+          -archivePath $CM_BUILD_DIR/$XCODE_SCHEME.xcarchive archive
+          
+          xcodebuild -exportArchive \
+          -archivePath $CM_BUILD_DIR/$XCODE_SCHEME.xcarchive \
+          -exportOptionsPlist ExportOptions.plist \
+          -exportPath $CM_BUILD_DIR/build
+    artifacts:
+      - build/*.ipa
