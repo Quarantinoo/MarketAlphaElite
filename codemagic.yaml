@@ -1,0 +1,30 @@
+workflows:
+  ios-app:
+    name: iOS Build
+    environment:
+      vars:
+        XCODE_PROJECT: "MarketAlphaElite.xcodeproj"
+        XCODE_SCHEME: "MarketAlphaElite"
+      xcode: latest
+    scripts:
+      - name: Build IPA
+        script: |
+          xcodebuild \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphoneos \
+            -configuration Release \
+            archive -archivePath $CM_BUILD_DIR/ios_archive
+
+          xcodebuild \
+            -exportArchive \
+            -archivePath $CM_BUILD_DIR/ios_archive.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath $CM_BUILD_DIR
+    artifacts:
+      - "*.ipa"
+      - "*.dSYM.zip"
+    publishing:
+      email:
+        recipients:
+          - vighnesh.chauhan11@gmail.com
