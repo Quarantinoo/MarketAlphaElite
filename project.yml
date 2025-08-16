@@ -1,0 +1,25 @@
+name: MarketAlphaElite
+options:
+  bundleIdPrefix: com.vighnesh
+  deploymentTarget:
+    iOS: 15.0
+  xcodeVersion: "15.0"
+
+targets:
+  MarketAlphaElite:
+    type: application
+    platform: iOS
+    sources:
+      - App
+    resources:
+      - App/Assets.xcassets
+    info:
+      path: App/Info.plist
+      properties:
+        UILaunchStoryboardName: LaunchScreen
+        UIRequiredDeviceCapabilities: [armv7]
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIRequiresFullScreen: true
