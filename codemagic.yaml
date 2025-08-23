@@ -1,0 +1,76 @@
+workflows:
+  ios-workflow:
+    name: Build iOS IPA
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+      cocoapods: default
+      vars:
+        XCODE_SCHEME: "MarketAlphaElite"   # If your app/target is named differently, put that name here
+    scripts:
+      - name: Show repo contents
+        script: |
+          echo "Repo root:"
+          ls -la
+      - name: Generate Xcode project if project.yml exists (XcodeGen)
+        script: |
+          if [ -f "project.yml" ]; then
+            echo "project.yml found → installing XcodeGen and generating .xcodeproj"
+            brew install xcodegen
+            xcodegen generate
+          else
+            echo "No project.yml → skipping XcodeGen"
+          fi
+          echo "After generation:"
+          ls -la
+      - name: Install CocoaPods if Podfile exists
+        script: |
+          if [ -f "Podfile" ]; then
+            echo "Podfile found → running pod install"
+            pod install
+          else
+            echo "No Podfile → skipping pod install"
+          fi
+          echo "Files after pod step:"
+          ls -la
+      - name: Decide workspace or project
+        script: |
+          if ls *.xcworkspace 1> /dev/null 2>&1; then
+            echo "Found a .xcworkspace → using it"
+            echo "USE_WORKSPACE=true" >> $CM_ENV
+            echo "XCODE_CONTAINER=$(ls *.xcworkspace | head -n 1)" >> $CM_ENV
+          elif ls *.xcodeproj 1> /dev/null 2>&1; then
+            echo "Found a .xcodeproj → using it"
+            echo "USE_WORKSPACE=false" >> $CM_ENV
+            echo "XCODE_CONTAINER=$(ls *.xcodeproj | head -n 1)" >> $CM_ENV
+          else
+            echo "ERROR: No .xcworkspace or .xcodeproj found at repo root."
+            exit 1
+          fi
+          echo "Chosen container: $XCODE_CONTAINER"
+      - name: Build archive
+        script: |
+          set -e
+          if [ "$USE_WORKSPACE" = "true" ]; then
+            xcodebuild clean -workspace "$XCODE_CONTAINER" \
+              -scheme "$XCODE_SCHEME" \
+              -sdk iphoneos \
+              -configuration Release \
+              archive -archivePath $CM_BUILD_DIR/MarketAlphaElite.xcarchive
+          else
+            xcodebuild clean -project "$XCODE_CONTAINER" \
+              -scheme "$XCODE_SCHEME" \
+              -sdk iphoneos \
+              -configuration Release \
+              archive -archivePath $CM_BUILD_DIR/MarketAlphaElite.xcarchive
+          fi
+      - name: Export IPA
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/MarketAlphaElite.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath $CM_BUILD_DIR
+    artifacts:
+      - $CM_BUILD_DIR/*.ipa
+      - $CM_BUILD_DIR/*.xcarchive
