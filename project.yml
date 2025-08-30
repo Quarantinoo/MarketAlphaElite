@@ -1,0 +1,22 @@
+name: MarketAlphaElite
+options:
+  bundleIdPrefix: com.vighnesh
+  deploymentTarget:
+    iOS: "15.0"
+targets:
+  MarketAlphaElite:
+    type: application
+    platform: iOS
+    bundleId: com.vighnesh.marketalphaelite
+    deploymentTarget: "15.0"
+    settings:
+      base:
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: B67U69WFYT
+        SWIFT_VERSION: 5.0
+    sources:
+      - .
+    resources:
+      - App/Assets.xcassets
+    info:
+      path: Info.plist
